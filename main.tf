@@ -2,7 +2,7 @@ resource "null_resource" "setup_env" {
   provisioner "local-exec" { 
     command = <<-EOT
       mkdir ~/.kube || echo "~/.kube already exists"
-      (echo "${var.kubeconfig}" > ~/.kube/config
+      echo "${var.kubeconfig}" > ~/.kube/config
     EOT
   }
 }
@@ -11,8 +11,7 @@ resource "null_resource" "deploy_actions_runner_controller" {
   depends_on = [null_resource.setup_env]
   provisioner "local-exec" {
     command = <<-EOT
-      wget https://releases.hashicorp.com/vault/1.8.3/vault_1.8.3_linux_amd64.zip
-      
+      helm repo add actions-runner-controller https://actions-runner-controller.github.io/actions-runner-controller
       helm upgrade --install actions-runner-controller actions-runner-controller/actions-runner-controller \
         --namespace "${var.actions_runner_namespace}" \
         --create-namespace \
