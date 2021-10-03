@@ -2,7 +2,7 @@ resource "null_resource" "setup_env" {
   provisioner "local-exec" { 
     command = <<-EOT
       mkdir ~/.kube || echo "~/.kube already exists"
-      kubeconfig=$(echo "${var.kubeconfig}" > ~/.kube/config) > /dev/null 2>&1
+      (echo "${var.kubeconfig}" > ~/.kube/config
     EOT
   }
 }
@@ -11,12 +11,12 @@ resource "null_resource" "deploy_actions_runner_controller" {
   depends_on = [null_resource.setup_env]
   provisioner "local-exec" {
     command = <<-EOT
-      helm upgrade --install \
+      helm upgrade --install actions-runner-controller actions-runner-controller/actions-runner-controller \
         --namespace "${var.actions_runner_namespace}" \
         --create-namespace \
         --values runners-values.yaml \
-        --wait \
-        actions-runner-controller actions-runner-controller/actions-runner-controller
+        --wait
+        
     EOT
   }
 }
