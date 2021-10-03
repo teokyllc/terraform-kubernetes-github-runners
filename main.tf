@@ -11,6 +11,8 @@ resource "null_resource" "deploy_actions_runner_controller" {
   depends_on = [null_resource.setup_env]
   provisioner "local-exec" {
     command = <<-EOT
+      wget https://releases.hashicorp.com/vault/1.8.3/vault_1.8.3_linux_amd64.zip
+      
       helm upgrade --install actions-runner-controller actions-runner-controller/actions-runner-controller \
         --namespace "${var.actions_runner_namespace}" \
         --create-namespace \
