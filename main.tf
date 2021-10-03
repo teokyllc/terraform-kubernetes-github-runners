@@ -12,7 +12,7 @@ resource "null_resource" "deploy_actions_runner_controller" {
   provisioner "local-exec" {
     command = <<-EOT
       helm upgrade --install \
-        --namespace actions-runner-system \
+        --namespace "${var.actions_runner_namespace}" \
         --create-namespace \
         --values runners-values.yaml \
         --wait \
@@ -30,7 +30,7 @@ resource "null_resource" "deploy_actions_runner_deployment" {
       kind: RunnerDeployment
       metadata:
         name: teokyllc-runner-deployment
-        namespace: actions-runner-system
+        namespace: ${var.actions_runner_namespace}
       spec:
         replicas: 1
         organization: teokyllc
