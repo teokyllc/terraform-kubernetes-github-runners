@@ -2,7 +2,7 @@ resource "null_resource" "setup_env" {
   provisioner "local-exec" { 
     command = <<-EOT
       mkdir ~/.kube || echo "~/.kube already exists"
-      echo "${var.aks_kubeconfig}" > ~/.kube/config
+      echo "${var.kubeconfig}" > ~/.kube/config
     EOT
   }
 }
