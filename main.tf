@@ -50,7 +50,6 @@ resource "null_resource" "deploy_actions_runner_deployment" {
                 tolerationSeconds: 10
             ephemeral: true
             dockerEnabled: true
-            dockerRegistryMirror: https://mirror.gcr.io/
             dockerdWithinRunnerContainer: false
             workDir: /home/runner/work
       ---
