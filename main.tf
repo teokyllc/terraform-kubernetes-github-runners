@@ -1,75 +1,74 @@
-resource "null_resource" "setup_env" { 
-  provisioner "local-exec" { 
-    command = <<-EOT
-      mkdir ~/.kube || echo "~/.kube already exists"
-      echo "${var.kubeconfig}" > ~/.kube/config
-    EOT
+resource "helm_release" "runners_controller" {
+  name       = "actions-runner-controller"
+  repository = "https://actions-runner-controller.github.io/actions-runner-controller"
+  chart      = "actions-runner-controller"
+  namespace  = var.actions_runner_namespace
+  values     = [
+    "${file(var.values_filename)}"
+  ]
+}
+
+resource "kubernetes_manifest" "actions_runner_deployment" {
+  depends_on = [helm_release.runners_controller]
+  manifest = {
+    "apiVersion" = "actions.summerwind.dev/v1alpha1"
+    "kind" = "RunnerDeployment"
+    "metadata" = {
+      "name" = "actions-runner-deployment"
+      "namespace" = "${var.actions_runner_namespace}"
+    }
+    "spec" = {
+      "template" = {
+        "metadata" = {
+          "annotations" = {
+            "cluster-autoscaler.kubernetes.io/safe-to-evict" = "true"
+          }
+        }
+        "spec" = {
+          "dockerEnabled" = "${var.docker_enabled}"
+          "dockerdWithinRunnerContainer" = "${var.docker_enabled_in_runner_container}"
+          "ephemeral" = "${var.ephemeral}"
+          "image" = "${var.container_registry}/${var.container_image}:${var.container_tag}"
+          "imagePullPolicy" = "IfNotPresent"
+          "organization" = "${var.github_org}"
+          "tolerations" = [
+            {
+              "effect" = "NoExecute"
+              "key" = "node.kubernetes.io/unreachable"
+              "operator" = "Exists"
+              "tolerationSeconds" = 10
+            },
+          ]
+          "workDir" = "/home/runner/work"
+        }
+      }
+    }
   }
 }
 
-resource "null_resource" "deploy_actions_runner_controller" {
-  depends_on = [null_resource.setup_env]
-  provisioner "local-exec" {
-    command = <<-EOT
-      kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.3/cert-manager.yaml
-      sleep 180
-      helm repo add actions-runner-controller https://actions-runner-controller.github.io/actions-runner-controller
-      helm upgrade --install actions-runner-controller actions-runner-controller/actions-runner-controller \
-        --namespace "${var.actions_runner_namespace}" \
-        --create-namespace \
-        --values runners-values.yaml \
-        --wait
-        
-    EOT
-  }
-}
-
-resource "null_resource" "deploy_actions_runner_deployment" {
-  depends_on = [null_resource.deploy_actions_runner_controller]
-  provisioner "local-exec" {
-    command = <<-EOT
-      cat <<EOF | kubectl apply -f -
-      apiVersion: actions.summerwind.dev/v1alpha1
-      kind: RunnerDeployment
-      metadata:
-        name: actions-runner-deployment
-        namespace: actions-runner-system
-      spec:
-        template:
-          metadata:
-            annotations:
-              cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
-          spec:
-            organization: teokyllc
-            image: johndvs/actions-runner:v2.283.2-ubuntu-20.04
-            imagePullPolicy: IfNotPresent
-            tolerations:
-              - key: "node.kubernetes.io/unreachable"
-                operator: "Exists"
-                effect: "NoExecute"
-                tolerationSeconds: 10
-            ephemeral: true
-            dockerEnabled: true
-            dockerdWithinRunnerContainer: false
-            workDir: /home/runner/work
-      ---
-      apiVersion: actions.summerwind.dev/v1alpha1
-      kind: HorizontalRunnerAutoscaler
-      metadata:
-        name: runner-deployment-autoscaler
-        namespace: actions-runner-system
-      spec:
-        scaleTargetRef:
-          name: actions-runner-deployment
-        minReplicas: 1
-        maxReplicas: 10
-        metrics:
-        - type: PercentageRunnersBusy
-          scaleUpThreshold: '0.75'    # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
-          scaleDownThreshold: '0.3'   # The percentage of busy runners at which the number of desired runners are re-evaluated to scale down
-          scaleUpAdjustment: 2        # The scale up runner count added to desired count
-          scaleDownAdjustment: 1      # The scale down runner count subtracted from the desired count
-      EOF
-    EOT
-  }
-}
+# resource "kubernetes_manifest" "horizontalrunnerautoscaler_actions_runner_system_runner_deployment_autoscaler" {
+#   manifest = {
+#     "apiVersion" = "actions.summerwind.dev/v1alpha1"
+#     "kind" = "HorizontalRunnerAutoscaler"
+#     "metadata" = {
+#       "name" = "runner-deployment-autoscaler"
+#       "namespace" = "actions-runner-system"
+#     }
+#     "spec" = {
+#       "maxReplicas" = 10
+#       "metrics" = [
+#         {
+#           "scaleDownAdjustment" = 1
+#           "scaleDownThreshold" = "0.3"
+#           "scaleUpAdjustment" = 2
+#           "scaleUpThreshold" = "0.75"
+#           "type" = "PercentageRunnersBusy"
+#         },
+#       ]
+#       "minReplicas" = 1
+#       "scaleTargetRef" = {
+#         "name" = "actions-runner-deployment"
+#       }
+#     }
+#   }
+# }
