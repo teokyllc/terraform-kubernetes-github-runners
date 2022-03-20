@@ -30,7 +30,7 @@ resource "helm_release" "runners_controller" {
   #   name  = "authSecret.github_app_private_key"
   #   value = "true"
   # }
-}
+
 
 # resource "kubernetes_manifest" "actions_runner_deployment" {
 #   depends_on = [helm_release.runners_controller]
