@@ -54,3 +54,15 @@ variable "enable_github_app_auth" {
     description = "Enables the controller to use a Github App for org access."
     default = false
 }
+
+variable "github_pat" {
+    type = string
+    description = "The Github personal access token."
+    default = null
+}
+
+variable "github_app_id" {
+    type = string
+    description = "The Github app id."
+    default = null
+}
