@@ -42,3 +42,15 @@ variable "github_org" {
     type = string
     description = "The Github org the runners will serve."
 }
+
+variable "enable_github_pat_auth" {
+    type = bool
+    description = "Enables the controller to use a Github Personal Access Token for org access."
+    default = false
+}
+
+variable "enable_github_app_auth" {
+    type = bool
+    description = "Enables the controller to use a Github App for org access."
+    default = false
+}

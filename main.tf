@@ -12,6 +12,31 @@ resource "helm_release" "runners_controller" {
   values     = [
     "${file(var.gh_actiones_values_filename)}"
   ]
+
+  dynamic set {
+    for_each = var.enable_github_pat_auth ? [1] : []
+    content {
+      name  = "authSecret.github_token"
+      value = var.github_pat
+    }
+  }
+
+  dynamic set {
+    for_each = var.enable_github_app_auth ? [1] : []
+    content {
+      name  = "authSecret.github_app_id"
+      value = var.github_app_id
+    }
+  }
+
+  # set {
+  #   name  = "authSecret.github_app_installation_id"
+  #   value = "true"
+  # }
+  # set {
+  #   name  = "authSecret.github_app_private_key"
+  #   value = "true"
+  # }
 }
 
 # resource "kubernetes_manifest" "actions_runner_deployment" {
