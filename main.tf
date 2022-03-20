@@ -4,7 +4,7 @@ resource "helm_release" "runners_controller" {
   chart      = "actions-runner-controller"
   namespace  = var.actions_runner_namespace
   values     = [
-    "${file(var.values_filename)}"
+    "${file(var.gh_actiones_values_filename)}"
   ]
 }
 
