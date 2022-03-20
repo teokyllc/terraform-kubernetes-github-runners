@@ -17,7 +17,7 @@ resource "helm_release" "runners_controller" {
     for_each = var.enable_github_pat_auth ? [true] : []
     content {
       name  = "authSecret.github_token"
-      value = var.github_pat
+      value = "12345"
     }
   }
 }
