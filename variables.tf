@@ -6,6 +6,7 @@ variable "actions_runner_namespace" {
 variable "gh_actiones_values_filename" {
     type = string
     description = "The filename for values.yaml."
+    default = "values.yaml"
 }
 
 variable "docker_enabled" {
@@ -65,4 +66,19 @@ variable "github_app_id" {
     type = string
     description = "The Github app id."
     default = null
+}
+
+variable "registry_server" {
+    type = string
+    description = "The container registry URL."
+}
+
+variable "registry_username" {
+    type = string
+    description = "The container registry username."
+}
+
+variable "registry_password" {
+    type = string
+    description = "The container registry password."
 }

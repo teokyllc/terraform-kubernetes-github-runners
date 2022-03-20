@@ -1,0 +1,43 @@
+replicaCount: 1
+syncPeriod: 10m
+enableLeaderElection: true
+certManagerEnabled: true
+imagePullSecrets: []
+
+authSecret:
+  enabled: true
+  create: false
+  name: "controller-manager"
+
+dockerRegistryMirror: ""
+image:
+  repository: "summerwind/actions-runner-controller"
+  dindSidecarRepositoryAndTag: "docker:dind"
+  pullPolicy: IfNotPresent
+  actionsRunnerImagePullSecrets: [acr-access]
+
+serviceAccount:
+  create: true
+
+service:
+  type: ClusterIP
+  port: 443
+
+metrics:
+  serviceMonitor: false
+  port: 8443
+  proxy:
+    enabled: true
+    image:
+      repository: quay.io/brancz/kube-rbac-proxy
+      tag: v0.11.0
+
+podDisruptionBudget:
+  enabled: false
+
+scope:
+  singleNamespace: false
+  watchNamespace: ""
+
+githubWebhookServer:
+  enabled: false
