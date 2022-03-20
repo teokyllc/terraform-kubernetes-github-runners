@@ -8,7 +8,7 @@ resource "helm_release" "runners_controller" {
   name       = "actions-runner-controller"
   repository = "https://actions-runner-controller.github.io/actions-runner-controller"
   chart      = "actions-runner-controller"
-  namespace  = kubernetes_namespace.action_runner_ns.metadata.name
+  namespace  = kubernetes_namespace.action_runner_ns.metadata[0].name
   values     = [
     "${file(var.gh_actiones_values_filename)}"
   ]
@@ -21,7 +21,7 @@ resource "helm_release" "runners_controller" {
 #     "kind" = "RunnerDeployment"
 #     "metadata" = {
 #       "name" = "actions-runner-deployment"
-#       "namespace" = "${kubernetes_namespace.action_runner_ns.metadata.name}"
+#       "namespace" = "${kubernetes_namespace.action_runner_ns.metadata[0].name}"
 #     }
 #     "spec" = {
 #       "template" = {
